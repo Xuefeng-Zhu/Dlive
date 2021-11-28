@@ -5,6 +5,8 @@ import { Typography, Box } from '@mui/material';
 import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 import ThumbUpAltOutlinedIcon from '@mui/icons-material/ThumbUpAltOutlined';
 import ReactPlayer from 'react-player';
+// import Moralis from 'moralis';
+import { useMoralis } from 'react-moralis';
 
 import { useStateContext } from '../contexts/StateContextProvider';
 import VideoItem from './VideoItem';
@@ -12,10 +14,38 @@ import Loader from './Loader';
 
 const VideoDetail = () => {
   const { id } = useParams();
+  const { Moralis, isInitialized } = useMoralis();
   const { retrieveNFTDetails } = useStateContext();
+  const [videoStats, setVideoStats] = useState(null);
   const { isLoading, data } = useQuery(['NFTDetails', id], () =>
     retrieveNFTDetails(id)
   );
+
+  useEffect(async () => {
+    if (!isInitialized) {
+      return;
+    }
+
+    const VideoStats = Moralis.Object.extend('VideoStats');
+    const query = new Moralis.Query(VideoStats);
+    query.equalTo('nftId', id);
+    const results = await query.find();
+    let vs;
+
+    if (results.length) {
+      vs = results[0];
+    } else {
+      vs = new VideoStats();
+      vs.set('nftId', id);
+      vs.set('views', 0);
+    }
+
+    vs.set('views', vs.get('views') + 1);
+    await vs.save();
+    setVideoStats(vs);
+    console.log(vs.get('views'));
+  }, [id, isInitialized]);
+
   const videoDetail = data?.nft;
   const videoSrc = videoDetail?.metadata.playbackId
     ? `https://cdn.livepeer.com/hls/${videoDetail?.metadata.playbackId}/index.m3u8`
@@ -48,12 +78,10 @@ const VideoDetail = () => {
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Box sx={{ opacity: 0.7 }}>
-              {/* <Typography sx={{ marginBottom: '5px' }}>
-                  {parseInt(videoDetail?.statistics?.viewCount).toLocaleString(
-                    'en-US'
-                  )}{' '}
-                  views
-                </Typography> */}
+              <Typography>
+                {parseInt(videoStats?.get('views')).toLocaleString('en-US')}
+                views
+              </Typography>
               <Typography>
                 {new Date(videoDetail?.updated_date).toLocaleDateString()}
               </Typography>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useMoralis } from 'react-moralis';
 import {
   Box,
   Button,
@@ -18,10 +19,9 @@ import { TextField, SimpleFileUpload, Switch } from 'formik-mui';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 import { useStateContext } from '../contexts/StateContextProvider';
-import { useWeb3Context } from '../contexts/Web3ContextProvider';
 
 const SearchFeed = () => {
-  const { address } = useWeb3Context();
+  const { account } = useMoralis();
   const { uploadFile, createStream, mintNFT } = useStateContext();
   const [streamKey, setStreamKey] = useState();
 
@@ -42,7 +42,7 @@ const SearchFeed = () => {
           playbackId,
         },
       },
-      address
+      account
     );
 
     setStreamKey(streamKey);
@@ -79,7 +79,7 @@ const SearchFeed = () => {
             file_url: thumbnail.ipfs_url,
             external_url: video.ipfs_url,
           },
-          address
+          account
         );
 
         setSubmitting(false);
@@ -99,7 +99,7 @@ const SearchFeed = () => {
 
   let content = <Alert severity="error">Please connect to wallet</Alert>;
 
-  if (address) {
+  if (account) {
     content = (
       <Formik
         initialValues={{

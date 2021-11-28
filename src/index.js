@@ -1,23 +1,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { MoralisProvider } from 'react-moralis';
 
 import './index.css';
 import App from './App';
 import { StateContextProvider } from './contexts/StateContextProvider';
-import { Web3ContextProvider } from './contexts/Web3ContextProvider';
 
 const queryClient = new QueryClient();
 
 ReactDOM.render(
   <React.StrictMode>
-    <StateContextProvider>
-      <Web3ContextProvider>
+    <MoralisProvider
+      appId={process.env.REACT_APP_MORALIS_API_ID}
+      serverUrl={process.env.REACT_APP_MORALIS_SERVER}
+    >
+      <StateContextProvider>
         <QueryClientProvider client={queryClient}>
           <App />
         </QueryClientProvider>
-      </Web3ContextProvider>
-    </StateContextProvider>
+      </StateContextProvider>
+    </MoralisProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

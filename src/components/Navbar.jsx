@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Typography, Box, Button } from '@mui/material';
+import { useMoralis } from 'react-moralis';
+import { Typography, Box, Button, Menu, MenuItem } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 
 import SearchBar from './SearchBar';
-import { useWeb3Context } from '../contexts/Web3ContextProvider';
 
 const Navbar = () => {
-  const { loadWeb3Modal, address } = useWeb3Context();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const { authenticate, isAuthenticated, enableWeb3, logout } = useMoralis();
+  console.log(useMoralis());
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    enableWeb3();
+  }, [isAuthenticated]);
 
   return (
     <Box
@@ -39,7 +49,7 @@ const Navbar = () => {
           gap: '10',
         }}
       >
-        {address ? (
+        {isAuthenticated ? (
           <Link
             to="/upload"
             style={{ display: 'flex', textDecoration: 'none' }}
@@ -48,6 +58,9 @@ const Navbar = () => {
               sx={{ mr: 2 }}
               variant="outlined"
               startIcon={<UploadIcon />}
+              onMouseEnter={(event) => {
+                setAnchorEl(event.currentTarget);
+              }}
             >
               Upload
             </Button>
@@ -57,12 +70,27 @@ const Navbar = () => {
             sx={{ mr: 2 }}
             variant="outlined"
             startIcon={<AccountBalanceWalletIcon />}
-            onClick={loadWeb3Modal}
+            onClick={authenticate}
           >
             Connect to wallet
           </Button>
         )}
-
+        <Menu
+          anchorEl={anchorEl}
+          open={!!anchorEl}
+          onClose={() => {
+            setAnchorEl(null);
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              logout();
+              setAnchorEl(null);
+            }}
+          >
+            Logout
+          </MenuItem>
+        </Menu>
         <SearchBar />
       </Box>
     </Box>
