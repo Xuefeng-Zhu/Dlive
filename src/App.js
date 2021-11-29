@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { HashRouter as Router, Switch, Route } from 'react-router-dom';
 import Feed from './components/Feed';
 import Navbar from './components/Navbar';
 import { Box } from '@mui/material';
